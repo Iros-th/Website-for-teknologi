@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Velkommen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: #333;
+    }
+    .container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 24px;
+    }
+    button {
+      margin: 10px 0;
+      padding: 12px 24px;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background-color: #007bff;
+      color: white;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .list-button {
+      background-color: #28a745;
+    }
+    .list-button:hover {
+      background-color: #1e7e34;
+    }
+    .back-button {
+      background-color: #6c757d;
+      margin-top: 20px;
+      width: auto;
+      padding: 8px 20px;
+    }
+    .back-button:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="main-menu">
+    <h1>Velkommen</h1>
+    <p>Vil du ind på butikken eller på bilaget?</p>
+    <button id="enter-store-btn">Butikken</button>
+    <button id="enter-bilag-btn">Bilaget</button>
+  </div>
+
+  <div class="container" id="store" style="display:none;">
+    <h1>Butikken</h1>
+    <p>Velkommen til butikken!</p>
+    <button class="back-button" id="back-to-main-from-store">Tilbage</button>
+  </div>
+
+  <div class="container" id="bilag-list" style="display:none;">
+    <h1>Bilag</h1>
+    <p>Vælg et bilag ved at trykke på det:</p>
+    <button class="list-button" data-bilag="Bilag 1">Bilag 1</button>
+    <button class="list-button" data-bilag="Bilag 2">Bilag 2</button>
+    <button class="list-button" data-bilag="Bilag 3">Bilag 3</button>
+    <button class="back-button" id="back-to-main-from-bilag-list">Tilbage</button>
+  </div>
+
+  <div class="container" id="bilag-detail" style="display:none;">
+    <h1 id="bilag-title">Bilag</h1>
+    <p id="bilag-description"></p>
+    <button class="back-button" id="back-to-bilag-list">Tilbage til bilag</button>
+  </div>
+
+  <script>
+    const mainMenu = document.getElementById('main-menu');
+    const store = document.getElementById('store');
+    const bilagList = document.getElementById('bilag-list');
+    const bilagDetail = document.getElementById('bilag-detail');
+    const bilagTitle = document.getElementById('bilag-title');
+    const bilagDescription = document.getElementById('bilag-description');
+
+    document.getElementById('enter-store-btn').addEventListener('click', () => {
+      mainMenu.style.display = 'none';
+      store.style.display = 'block';
+      bilagList.style.display = 'none';
+      bilagDetail.style.display = 'none';
+    });
