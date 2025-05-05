@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Butik - Brandhæmmende produkter og flugtvejsbelysning</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9fafb;
+      color: #222;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    header {
+      background-color: #007bff;
+      color: white;
+      width: 100%;
+      padding: 15px 0;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    #cart-button {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: #28a745;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(40,167,69,0.4);
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    #cart-button:hover {
+      background-color: #1e7e34;
+    }
+    main {
+      flex: 1;
+      max-width: 960px;
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .category-selection {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .category-btn {
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background-color 0.3s ease;
+      min-width: 180px;
+      text-align: center;
+      user-select: none;
+      box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    }
+    .category-btn:hover, .category-btn.active {
+      background-color: #0056b3;
+      box-shadow: 0 6px 12px rgba(0, 86, 179, 0.5);
+    }
+    .products-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease;
+    }
+    .product-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .product-image {
+      width: 100%;
+      height: 150px;
+      object-fit: contain;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      background-color: #f0f0f0;
+    }
+    .product-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .product-description {
+      font-size: 0.9rem;
+      color: #555;
+      flex-grow: 1;
+      margin-bottom: 15px;
+    }
+    .product-price {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #007bff;
+      margin-bottom: 15px;
+    }
+    .buy-button {
+      background-color: #28a745;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .buy-button:hover {
+      background-color: #1e7e34;
+    }
+    /* Cart modal styles */
+    #cart-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 15px;
+      box-sizing: border-box;
+    }
+    #cart-modal.active {
+      display: flex;
+    }
+    #cart-content {
+      background: white;
+      border-radius: 12px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    #cart-content h2 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .cart-item-title {
+      flex: 1;
+      font-weight: 600;
+    }
+    .cart-item-quantity {
+      margin: 0 15px;
+      width: 40px;
+      text-align: center;
+    }
+    .cart-item-price {
+      font-weight: 700;
+      min-width: 80px;
+      text-align: right;
+      color: #007bff;
+    }
+    .remove-button {
+      background: transparent;
+      border: none;
+      color: #dc3545;
+      font-weight: 700;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    #cart-total {
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-top: 15px;
+      text-align: right;
+      color: #28a745;
+    }
+    #close-cart-btn {
+      background-color: #6c757d;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 20px;
+      align-self: center;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    #close-cart-btn:hover {
+      background-color: #5a6268;
+    }
+
+    /* Responsive adjustments for mobile */
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+      header {
+        font-size: 1.25rem;
+        padding: 12px 0;
+      }
+      #cart-button {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        top: 55%;
+      }
+      .category-selection {
+        gap: 10px;
+      }
+      .category-btn {
+        min-width: 140px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+      }
+      .products-list {
+        grid-template-columns: 1fr;
+      }
+      .product-image {
+        height: 130px;
+      }
+      #cart-content {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  Butik: Brandhæmmende produkter &amp; Flugtvejsbelysning
+  <button id="cart-button" aria-label="Min kurv">Min Kurv (<span id="cart-count">0</span>)</button>
+</header>
+
+<main>
+  <div class="category-selection" role="tablist">
+    <button class="category-btn active" data-category="maling" role="tab" aria-selected="true" tabindex="0">Brandhæmmende Maling</button>
+    <button class="category-btn" data-category="spray" role="tab" aria-selected="false" tabindex="-1">Brandhæmmende Spray</button>
+    <button class="category-btn" data-category="belysning" role="tab" aria-selected="false" tabindex="-1">Flugtvejs Belysning</button>
+  </div>
+
+  <div id="products-container" class="products-list" role="tabpanel" tabindex="0">
+    <!-- Produkter indsættes dynamisk her -->
+  </div>
+</main>
+
+<!-- Kurv modal -->
+<div id="cart-modal" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+  <div id="cart-content">
+    <h2 id="cart-title">Min kurv</h2>
+    <div id="cart-items">
+      <!-- Kurv varer -->
+    </div>
+    <div id="cart-total">Total: 0 DKK</div>
+    <button id="close-cart-btn" aria-label="Luk kurv">Luk</button>
+  </div>
+</div>
+
+<script>
+  // Produkter med billeder fra GitHub repo (relativ sti): billed 1-6 som angivet
+  const productsData = {
+    maling: [
+      {
+        id: 1,
+        title: 'Brandhæmmende Maling Classic',
+        description: 'Effektiv og holdbar brandhæmmende maling til træ og metal.',
+        price: 125.00,
+        priceText: '125,00 DKK',
+        image: 'billed1.jpg'
+      },
+      {
+        id: 2,
+        title: 'Brandhæmmende Maling Premium',
+        description: 'Top kvalitet maling med ekstra beskyttelse og lang holdbarhed.',
+        price: 299.00,
+        priceText: '299,00 DKK',
+        image: 'billed2.jpg'
+      }
+    ],
+    spray: [
+      {
+        id: 3,
+        title: 'Brandhæmmende Spray 500ml',
+        description: 'Nem og hurtig at påføre spray med brandhæmmende effekt.',
+        price: 89.00,
+        priceText: '89,00 DKK',
+        image: 'billed3.jpg'
+      },
+      {
+        id: 4,
+        title: 'Brandhæmmende Spray Pro',
+        description: 'Professionel spray for optimal brandsikring på svært tilgængelige områder.',
+        price: 139.00,
+        priceText: '139,00 DKK',
+        image: 'billed4.jpg'
+      }
+    ],
+    belysning: [
+      {
+        id: 5,
+        title: 'LED Flugtvejs Belysning Model A',
+        description: 'Robust og energieffektiv LED belysning til flugtveje. Klar til installation.',
+        price: 999.00,
+        priceText: '999,00 DKK/500 meter',
+        image: 'billed5.jpg'
+      },
+      {
+        id: 6,
+        title: 'Batteridrevet Flugtvejsbelysning',
+        description: 'Mobil flugtvejsbelysning med lang batterilevetid. Perfekt til midlertidig sikring.',
+        price: 799.00,
+        priceText: '799,00 DKK/500 meters',
+        image: 'billed6.jpg'
+      }
+    ]
+  };
+
+  const productsContainer = document.getElementById('products-container');
+  const categoryButtons = document.querySelectorAll('.category-btn');
+  const cartButton = document.getElementById('cart-button');
+  const cartModal = document.getElementById('cart-modal');
+  const cartItemsContainer = document.getElementById('cart-items');
+  const cartTotal = document.getElementById('cart-total');
+  const closeCartBtn = document.getElementById('close-cart-btn');
+  const cartCount = document.getElementById('cart-count');
+
+  let currentCategory = 'maling';
+  let cart = {};
+
+  // Funktion til at formatere tal til dansk valuta tekst (valgfrit, vi bruger fast strings men kan let ændre)
+  function formatPrice(price) {
+    return price.toFixed(2).replace('.', ',') + ' DKK';
+  }
+
+  // Render produkter i valgt kategori
+  function renderProducts(category) {
+    productsContainer.innerHTML = '';
+    const list = productsData[category] || [];
+    if (list.length === 0) {
+      productsContainer.innerHTML = '<p>Der er ingen produkter i denne kategori endnu. Kommer snart!</p>';
+      return;
+    }
+    list.forEach(product => {
+      const productCard = document.createElement('div');
+      productCard.classList.add('product-card');
+      productCard.innerHTML = `
+        <img src="${product.image}" alt="${product.title}" class="product-image" />
+        <div class="product-title">${product.title}</div>
+        <div class="product-description">${product.description}</div>
+        <div class="product-price">${product.priceText}</div>
+        <button class="buy-button" data-id="${product.id}">Tilføj til kurv</button>
+      `;
+      productsContainer.appendChild(productCard);
+    });
+  }
+
+  // Opdater kurvens visning (antal varer i knap og i modal)
+  function updateCartDisplay() {
+    const itemCount = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = itemCount;
+
+    cartItemsContainer.innerHTML = '';
+    if (itemCount === 0) {
+      cartItemsContainer.innerHTML = '<p>Din kurv er tom.</p>';
+      cartTotal.textContent = 'Total: 0 DKK';
+      return;
+    }
+
+    let totalPrice = 0;
+    Object.values(cart).forEach(item => {
+      const productTotal = item.product.price * item.quantity;
+      totalPrice += productTotal;
+
+      const cartItem = document.createElement('div');
+      cartItem.classList.add('cart-item');
+      cartItem.innerHTML = `
+        <div class="cart-item-title">${item.product.title}</div>
+        <input type="number" min="1" value="${item.quantity}" class="cart-item-quantity" aria-label="Antal for ${item.product.title}" data-id="${item.product.id}" />
+        <div class="cart-item-price">${formatPrice(productTotal)}</div>
+        <button class="remove-button" aria-label="Fjern ${item.product.title} fra kurv" data-id="${item.product.id}">&times;</button>
+      `;
+      cartItemsContainer.appendChild(cartItem);
+    });
+    cartTotal.textContent = `Total: ${formatPrice(totalPrice)}`;
+  }
+
+  // Håndter kategori skift
+  categoryButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.category === currentCategory) return;
+
+      categoryButtons.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+        b.setAttribute('tabindex', '-1');
+      });
+
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      btn.setAttribute('tabindex', '0');
+      currentCategory = btn.dataset.category;
+      renderProducts(currentCategory);
+    });
+  });
+
+  // Håndter tilføj til kurv
+  productsContainer.addEventListener('click', e => {
+    if (e.target.classList.contains('buy-button')) {
+      const productId = parseInt(e.target.dataset.id);
+      const product = Object.values(productsData).flat().find(p => p.id === productId);
+      if (product) {
+        if (cart[productId]) {
+          cart[productId].quantity += 1;
+        } else {
+          cart[productId] = { product, quantity: 1 };
+        }
+        updateCartDisplay();
+        alert(`"${product.title}" er tilføjet til din kurv.`);
+      }
+    }
+  });
+
+  // Åbn kurv modal
+  cartButton.addEventListener('click', () => {
+    cartModal.classList.add('active');
+  });
+
+  // Luk kurv modal
+  closeCartBtn.addEventListener('click', () => {
+    cartModal.classList.remove('active');
+  });
+
+  // Luk modal ved klik udenfor indhold
+  cartModal.addEventListener('click', e => {
+    if (e.target === cartModal) {
+      cartModal.classList.remove('active');
+    }
+  });
+
+  // Håndter ændringer i antal og fjern-knap i kurven
+  cartItemsContainer.addEventListener('input', e => {
+    if (e.target.classList.contains('cart-item-quantity')) {
+      const productId = parseInt(e.target.dataset.id);
+      const newQty = parseInt(e.target.value);
+      if (cart[productId]) {
+        if (newQty > 0) {
+          cart[productId].quantity = newQty;
+        } else {
+          delete cart[productId];
+        }
+        updateCartDisplay();
+      }
+    }
+  });
+
+  cartItemsContainer.addEventListener('click', e => {
+    if (e.target.classList.contains('remove-button')) {
+      const productId = parseInt(e.target.dataset.id);
+      if (cart[productId]) {
+        delete cart[productId];
+        updateCartDisplay();
+      }
+    }
+  });
+
+  // Initial render
+  renderProducts(currentCategory);
+  updateCartDisplay();
+</script>
+
+</body>
+</html>
+
