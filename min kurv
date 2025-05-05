@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Min Kurv</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9fafb;
+      margin: 0;
+      padding: 20px;
+      color: #222;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    .item-image {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      border-radius: 8px;
+      background-color: #f0f0f0;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    .item-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .item-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+    }
+    .item-price {
+      color: #007bff;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .item-quantity-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .item-quantity-container label {
+      font-weight: 600;
+    }
+    .item-quantity {
+      width: 50px;
+      padding: 4px 6px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    .remove-button {
+      background: transparent;
+      border: none;
+      color: #dc3545;
+      font-weight: 700;
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin-left: 10px;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    #total-price {
+      margin-top: 20px;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: #28a745;
+      text-align: right;
+    }
+    #back-button {
+      margin-top: 30px;
+      align-self: center;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 700;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      box-shadow: 0 4px 8px rgba(0,123,255,0.4);
+    }
+    #back-button:hover {
+      background-color: #0056b3;
+    }
+    /* Responsive */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      .item-quantity {
+        width: 40px;
+      }
+      .item-image {
+        width: 60px;
+        height: 60px;
+        margin-right: 10px;
+      }
+      #total-price {
+        font-size: 1.2rem;
+      }
+      #back-button {
+        width: 100%;
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main" aria-label="Min kurv">
+    <h1>Min Kurv</h1>
+    <div id="cart-items" aria-live="polite" aria-relevant="all">
+      <!-- Cart items will be rendered here -->
+    </div>
+    <div id="total-price">Total: 0 DKK</div>
+    <button id="back-button" aria-label="Tilbage til butikken">Tilbage til butikken</button>
+  </div>
+
+  <script>
+    // Products images same filenames as in store, assumed in same folder
+    // Cart is stored in localStorage with key: 'shoppingCart'
+    const cartItemsContainer = document.getElementById('cart-items');
+    const totalPriceElem = document.getElementById('total-price');
+    const backButton = document.getElementById('back-button');
+
+    // Load cart from localStorage or set empty object
+    let cart = JSON.parse(localStorage.getItem('shoppingCart')) || {};
+
+    // Renders one cart item row
+    function renderCartItem(item) {
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      div.dataset.id = item.product.id;
+
+      div.innerHTML = `
+        <img src="${item.product.image}" alt="${item.product.title}" class="item-image" />
+        <div class="item-details">
+          <div class="item-title">${item.product.title}</div>
+          <div class="item-price">${item.product.priceText}</div>
+          <div class="item-quantity-container">
+            <label for="qty-${item.product.id}">Antal:</label>
+            <input type="number" min="1" id="qty-${item.product.id}" class="item-quantity" value="${item.quantity}" aria-label="Antal for ${item.product.title}"/>
+          </div>
+        </div>
+        <button class="remove-button" aria-label="Fjern ${item.product.title} fra kurv">&times;</button>
+      `;
+      return div;
+    }
+
+    // Render entire cart
+    function renderCart() {
+      cartItemsContainer.innerHTML = '';
+      const items = Object.values(cart);
+      if (items.length === 0) {
+        cartItemsContainer.innerHTML = '<p>Din kurv er tom.</p>';
+        totalPriceElem.textContent = 'Total: 0 DKK';
+        return;
+      }
+
+      let total = 0;
+      items.forEach(item => {
+        total += item.product.price * item.quantity;
+        const itemElem = renderCartItem(item);
+        cartItemsContainer.appendChild(itemElem);
+      });
+
+      totalPriceElem.textContent = 'Total: ' + formatPrice(total);
+    }
+    // Format price helper (convert 499.00 to "499,00 DKK")
+    function formatPrice(price) {
+      return price.toFixed(2).replace('.', ',') + ' DKK';
+    }
+
+    // Save cart to localStorage
+    function saveCart() {
+      localStorage.setItem('shoppingCart', JSON.stringify(cart));
+    }
+
+    // Update quantity for product ID
+    function updateQuantity(productId, qty) {
+      if(qty < 1) return;
+      if(cart[productId]) {
+        cart[productId].quantity = qty;
+        saveCart();
+        renderCart();
+      }
+    }
+
+    // Remove item from cart
+    function removeItem(productId) {
+      if(cart[productId]) {
+        delete cart[productId];
+        saveCart();
+        renderCart();
+      }
+    }
+
+    // Event delegation for quantity changes and remove buttons
+    cartItemsContainer.addEventListener('input', e => {
+      if(e.target.classList.contains('item-quantity')) {
+        const productId = e.target.id.replace('qty-', '');
+        const newQty = parseInt(e.target.value);
+        if(!isNaN(newQty) && newQty > 0) {
+          updateQuantity(productId, newQty);
+        }
+      }
+    });
+
+    cartItemsContainer.addEventListener('click', e => {
+      if(e.target.classList.contains('remove-button')) {
+        const productId = e.target.parentElement.dataset.id;
+        removeItem(productId);
+      }
+    });
+
+    backButton.addEventListener('click', () => {
+      // Redirect back to store page - assuming store.html
+      window.location.href = 'store.html';
+    });
+
+    // Initial render
+    renderCart();
+  </script>
+
+</body>
+</html>
+
